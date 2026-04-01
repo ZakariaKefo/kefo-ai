@@ -1,296 +1,1775 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>منصة البحث العلمي - واجهة دردشة تقنية</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>KeFo AI — Glass Future Interface</title>
+
   <style>
-    *, *::before, *::after { box-sizing: border-box; }
-    body {
-      font-family: 'Courier New', Courier, monospace;
-      background-color: #000;
-      color: #0f0;
-      margin: 0 auto;
-      padding: 10px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      user-select: none;
-      max-width: 100%;
+    :root{
+      --bg:#06111b;
+      --bg2:#0a1a28;
+      --bg3:#0e2436;
+      --panel:rgba(10,20,32,.72);
+      --panel-strong:rgba(8,16,26,.88);
+      --panel-soft:rgba(255,255,255,.03);
+
+      --cyan:#38e8ff;
+      --cyan-soft:#c9fbff;
+      --cyan-dim:rgba(56,232,255,.16);
+      --blue:#67a8ff;
+      --green:#37ffb0;
+      --red:#ff5d6e;
+
+      --text:#ecfcff;
+      --muted:#9bcad1;
+      --line:rgba(56,232,255,.16);
+      --line-strong:rgba(56,232,255,.34);
+      --shadow:0 14px 40px rgba(0,0,0,.35);
+      --glow:0 0 0 1px rgba(56,232,255,.06), 0 0 30px rgba(56,232,255,.08);
+
+      --radius-xl:28px;
+      --radius-lg:22px;
+      --radius-md:18px;
+      --radius-sm:14px;
+
+      --topbar-h:76px;
+      --hero-h:210px;
+      --dock-h:86px;
+      --composer-h:82px;
+      --copyright-h:36px;
+      --safe-bottom: calc(var(--dock-h) + var(--composer-h) + var(--copyright-h) + 24px);
     }
-    h1 {
-      margin: 10px 0;
-      font-size: 1.5rem;
-      text-shadow: 0 0 10px #0f0, 0 0 20px #0f0, 0 0 30px #0f0;
-      text-align: center;
+
+    *{
+      box-sizing:border-box;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-touch-callout: none;
     }
-    #chat-container {
-      width: 100%;
-      max-width: 600px;
-      margin: 0 auto;
-      border: 1px solid #0f0;
-      background-color: rgba(0, 0, 0, 0.8);
-      border-radius: 10px;
-      box-shadow: 0 0 20px #0f0;
-      padding: 10px;
-      box-sizing: border-box;
+
+    html,body{
+      margin:0;
+      width:100%;
+      height:100%;
+      overflow:hidden;
     }
-    #conversation {
-      padding: 10px;
-      background-color: rgba(0, 0, 0, 0.9);
-      border-top-left-radius: 10px;
-      border-top-right-radius: 10px;
-      direction: rtl;
+
+    body{
+      font-family:"Segoe UI",Tahoma,Arial,sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(1200px 700px at 50% -10%, #153c57 0%, #0a1824 40%, #06111b 74%),
+        linear-gradient(180deg, #06111b, #08131d);
+      user-select:none;
+      -webkit-user-select:none;
+      -ms-user-select:none;
+      touch-action:manipulation;
+      transition:background .3s ease, filter .3s ease;
     }
-    .message-bubble {
-      background-color: rgba(0, 128, 0, 0.2);
-      color: #0f0;
-      padding: 10px;
-      border: 1px solid #0f0;
-      border-radius: 5px;
-      margin: 10px 0;
-      max-width: 90%;
-      word-wrap: break-word;
+
+    body.security-alert{
+      background:
+        radial-gradient(1200px 700px at 50% -10%, #56202a 0%, #220b10 42%, #110508 76%),
+        linear-gradient(180deg, #120608, #1b080b);
+      animation:dangerPulse .25s ease-in-out 7 alternate;
     }
-    .user-bubble {
-      align-self: flex-end;
-      background-color: rgba(0, 255, 0, 0.3);
+
+    @keyframes dangerPulse{
+      from{ filter:saturate(1); }
+      to{ filter:saturate(1.18) brightness(1.03); }
     }
-    #input-container {
-      display: flex;
-      align-items: center;
-      padding: 10px;
-      background-color: rgba(0, 0, 0, 0.9);
-      border-top: 1px solid #0f0;
-      border-bottom-left-radius: 10px;
-      border-bottom-right-radius: 10px;
-      flex-wrap: wrap;
+
+    /* ===== Ambient ===== */
+    .bg-grid,
+    .bg-glow,
+    .bg-scan{
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      z-index:0;
     }
-    #userInput {
-      flex: 1;
-      padding: 10px;
-      font-size: 16px;
-      border: 1px solid #0f0;
-      border-radius: 5px;
-      background-color: #000;
-      color: #0f0;
-      caret-color: #0f0;
-      box-shadow: 0 0 10px #0f0;
-      margin-bottom: 10px;
+
+    .bg-grid{
+      background-image:
+        linear-gradient(rgba(56,232,255,.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(56,232,255,.035) 1px, transparent 1px);
+      background-size:36px 36px;
+      mask-image:radial-gradient(circle at center, black 60%, transparent 100%);
+      opacity:.75;
     }
-    #sendBtn {
-      background-color: #000;
-      color: #0f0;
-      border: 1px solid #0f0;
-      padding: 10px 20px;
-      font-size: 16px;
-      cursor: pointer;
-      border-radius: 5px;
-      margin-right: 10px;
+
+    .bg-glow{
+      background:
+        radial-gradient(circle at 20% 18%, rgba(56,232,255,.08), transparent 16%),
+        radial-gradient(circle at 80% 18%, rgba(103,168,255,.08), transparent 16%),
+        radial-gradient(circle at 50% 75%, rgba(56,232,255,.06), transparent 26%);
+      filter:blur(24px);
+      opacity:.9;
     }
-    #sendBtn:hover {
-      background-color: #0f0;
-      color: #000;
-      transform: scale(1.1);
+
+    .bg-scan{
+      background:linear-gradient(transparent 0%, rgba(56,232,255,.035) 48%, rgba(56,232,255,.08) 50%, transparent 100%);
+      background-size:100% 8px;
+      animation:scanMove 10s linear infinite;
+      mix-blend-mode:screen;
+      opacity:.45;
     }
-    .copy-btn {
-      background-color: #000;
-      color: #0f0;
-      border: 1px solid #0f0;
-      padding: 8px 15px;
-      font-size: 14px;
-      cursor: pointer;
-      border-radius: 5px;
-      margin-top: 12px;
-      display: inline-block;
-      text-align: center;
+
+    @keyframes scanMove{
+      0%{ background-position:0 -120vh; }
+      100%{ background-position:0 120vh; }
     }
-    .copy-btn:hover {
-      background-color: #0f0;
-      color: #000;
-      transform: scale(1.05);
+
+    body.security-alert .bg-grid,
+    body.security-alert .bg-glow,
+    body.security-alert .bg-scan{
+      filter:hue-rotate(-150deg) saturate(1.8);
     }
-    .article-container {
-      padding: 20px;
-      background-color: rgba(0, 128, 0, 0.1);
-      border: 1px solid #0f0;
-      border-radius: 5px;
-      margin: 15px 0;
+
+    /* ===== App ===== */
+    .app{
+      position:relative;
+      z-index:1;
+      width:min(1180px, 100%);
+      height:100dvh;
+      margin:0 auto;
+      padding:8px;
+      display:grid;
+      grid-template-rows: var(--topbar-h) 1fr;
+      gap:8px;
+      overflow:hidden;
     }
-    .signature {
-      margin-top: -60px;
-      font-size: 16px;
-      color: #0f0;
-      text-align: right;
-      font-style: italic;
+
+    /* ===== Shared panel style ===== */
+    .glass{
+      background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.015));
+      border:1px solid var(--line);
+      box-shadow:var(--shadow), var(--glow), inset 0 1px 0 rgba(255,255,255,.04);
+      backdrop-filter:blur(12px);
     }
-    .typing-effect {
-      display: inline-block;
-      white-space: pre-wrap;
-      font-family: 'Courier New', Courier, monospace;
+
+    /* ===== Topbar ===== */
+    .topbar{
+      min-height:var(--topbar-h);
+      border-radius:var(--radius-lg);
+      display:grid;
+      grid-template-columns:1fr auto;
+      align-items:center;
+      gap:10px;
+      padding:10px 12px;
+      position:relative;
+      overflow:hidden;
     }
-    .notification {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background-color: #0f0;
-      color: #000;
-      padding: 10px 20px;
-      border-radius: 10px;
-      font-weight: bold;
-      box-shadow: 0 0 10px #0f0;
-      z-index: 1000;
-      transition: opacity 0.5s ease-in-out;
+
+    .topbar::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:linear-gradient(90deg, transparent 0%, rgba(56,232,255,.04) 25%, transparent 55%, rgba(56,232,255,.02) 80%, transparent 100%);
+      pointer-events:none;
     }
-    @media screen and (max-width: 600px) {
-      h1 { font-size: 1.2rem; }
-      #userInput, #sendBtn, .copy-btn { width: 100%; margin: 0 0 10px 0; }
-      .message-bubble { max-width: 100%; font-size: 14px; }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
+    }
+
+    .brand-core{
+      width:42px;
+      height:42px;
+      flex:0 0 auto;
+      border-radius:50%;
+      background:
+        radial-gradient(circle at 35% 35%, #ffffff, var(--cyan), #0c3246 74%);
+      box-shadow:
+        0 0 20px rgba(56,232,255,.35),
+        inset 0 0 14px rgba(255,255,255,.15);
+      position:relative;
+    }
+
+    .brand-core::before{
+      content:"";
+      position:absolute;
+      inset:-7px;
+      border-radius:50%;
+      border:1px solid rgba(56,232,255,.16);
+      animation:spin 10s linear infinite;
+    }
+
+    .brand-copy{
+      min-width:0;
+    }
+
+    .brand-copy h1{
+      margin:0;
+      font-size:17px;
+      line-height:1.1;
+      color:var(--cyan-soft);
+      letter-spacing:.3px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .brand-copy .sub{
+      margin-top:4px;
+      font-size:11px;
+      color:var(--muted);
+      text-transform:uppercase;
+      letter-spacing:1.2px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .status-cluster{
+      display:flex;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+      gap:6px;
+      min-width:0;
+    }
+
+    .status-pill{
+      border:1px solid var(--line);
+      border-radius:999px;
+      padding:6px 10px;
+      font-size:10px;
+      color:var(--muted);
+      background:rgba(255,255,255,.02);
+      white-space:nowrap;
+      max-width:150px;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    /* ===== Stage ===== */
+    .stage{
+      position:relative;
+      min-height:0;
+      border-radius:var(--radius-xl);
+      overflow:hidden;
+    }
+
+    /* ===== Hero ===== */
+    .hero{
+      position:absolute;
+      top:10px;
+      left:10px;
+      right:10px;
+      height:var(--hero-h);
+      border-radius:var(--radius-lg);
+      overflow:hidden;
+      z-index:2;
+      display:grid;
+      grid-template-columns:1fr 124px;
+      gap:8px;
+      align-items:center;
+      padding:14px;
+    }
+
+    .hero::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:
+        radial-gradient(circle at 18% 18%, rgba(56,232,255,.09), transparent 16%),
+        radial-gradient(circle at 82% 20%, rgba(103,168,255,.08), transparent 16%),
+        linear-gradient(180deg, rgba(56,232,255,.03), transparent 50%);
+      pointer-events:none;
+    }
+
+    .hero-copy{
+      position:relative;
+      z-index:1;
+      min-width:0;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+
+    .hero-kicker{
+      color:var(--muted);
+      font-size:10px;
+      text-transform:uppercase;
+      letter-spacing:1.8px;
+    }
+
+    .hero-title{
+      font-size:28px;
+      line-height:1.04;
+      font-weight:900;
+      color:var(--cyan-soft);
+      text-shadow:0 0 18px rgba(56,232,255,.14);
+    }
+
+    .hero-desc{
+      color:var(--text);
+      font-size:13px;
+      line-height:1.82;
+    }
+
+    .hero-tags{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+    }
+
+    .hero-tag{
+      border:1px solid var(--line);
+      border-radius:999px;
+      padding:6px 10px;
+      color:var(--muted);
+      font-size:10px;
+      background:rgba(255,255,255,.02);
+    }
+
+    .hero-visual{
+      position:relative;
+      width:124px;
+      height:124px;
+      margin-inline-start:auto;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      z-index:1;
+    }
+
+    .hero-ring{
+      position:absolute;
+      border-radius:50%;
+      border:1px solid rgba(56,232,255,.18);
+      animation:spin 12s linear infinite;
+    }
+
+    .hero-ring.r1{ inset:0; }
+    .hero-ring.r2{ inset:10px; animation-duration:8s; animation-direction:reverse; }
+    .hero-ring.r3{ inset:22px; animation-duration:5s; }
+
+    .hero-ring::before{
+      content:"";
+      position:absolute;
+      width:7px;
+      height:7px;
+      top:-4px;
+      left:50%;
+      transform:translateX(-50%);
+      border-radius:50%;
+      background:var(--cyan-soft);
+      box-shadow:0 0 10px rgba(56,232,255,.4);
+    }
+
+    .hero-core-halo{
+      position:absolute;
+      width:92px;
+      height:92px;
+      border-radius:50%;
+      background:radial-gradient(circle, rgba(56,232,255,.22), transparent 74%);
+      filter:blur(7px);
+      animation:haloPulse 3.2s ease-in-out infinite;
+    }
+
+    .hero-core{
+      width:54px;
+      height:54px;
+      border-radius:50%;
+      background:
+        radial-gradient(circle at 35% 35%, #fff, var(--cyan), #0c3246 74%);
+      box-shadow:
+        0 0 24px rgba(56,232,255,.42),
+        inset 0 0 16px rgba(255,255,255,.16);
+      position:relative;
+      z-index:2;
+      transition:.22s ease;
+    }
+
+    .hero-core.thinking{
+      background:
+        radial-gradient(circle at 35% 35%, #e9fff5, var(--green), #0b3828 74%);
+      box-shadow:
+        0 0 24px rgba(55,255,176,.35),
+        inset 0 0 16px rgba(255,255,255,.14);
+    }
+
+    .hero-core.speaking{
+      animation:corePulse 1s ease-in-out infinite;
+    }
+
+    @keyframes haloPulse{
+      0%,100%{ transform:scale(1); opacity:.7; }
+      50%{ transform:scale(1.12); opacity:1; }
+    }
+
+    @keyframes corePulse{
+      0%,100%{ transform:scale(1); }
+      50%{ transform:scale(1.16); }
+    }
+
+    @keyframes spin{
+      to{ transform:rotate(360deg); }
+    }
+
+    /* ===== Chat ===== */
+    .chat{
+      position:absolute;
+      inset:0;
+      overflow:auto;
+      padding:
+        calc(var(--hero-h) + 22px)
+        10px
+        calc(var(--safe-bottom))
+        10px;
+      scroll-behavior:smooth;
+      -webkit-overflow-scrolling:touch;
+      z-index:1;
+    }
+
+    .chat::-webkit-scrollbar{
+      width:8px;
+    }
+
+    .chat::-webkit-scrollbar-thumb{
+      background:rgba(56,232,255,.18);
+      border-radius:999px;
+    }
+
+    .msg{
+      display:flex;
+      width:100%;
+      margin:0 0 14px;
+    }
+
+    .msg.user{ justify-content:flex-start; }
+    .msg.ai{ justify-content:flex-end; }
+
+    .bubble{
+      max-width:100%;
+      padding:13px 14px;
+      border:1px solid var(--line);
+      border-radius:var(--radius-md);
+      background:rgba(255,255,255,.025);
+      color:var(--text);
+      line-height:1.9;
+      word-break:break-word;
+      font-size:14px;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
+    }
+
+    .msg.user .bubble{
+      background:rgba(55,255,176,.05);
+      border-color:rgba(55,255,176,.18);
+      color:#ddfff1;
+    }
+
+    /* ===== Result card ===== */
+    .result-card{
+      width:100%;
+      margin:0 0 16px auto;
+      border-radius:var(--radius-lg);
+      overflow:hidden;
+      position:relative;
+    }
+
+    .result-card::before{
+      content:"";
+      position:absolute;
+      top:0;
+      left:0;
+      right:0;
+      height:1px;
+      background:linear-gradient(90deg, transparent, rgba(56,232,255,.34), transparent);
+      z-index:1;
+    }
+
+    .result-head{
+      display:flex;
+      flex-direction:column;
+      align-items:flex-start;
+      gap:10px;
+      padding:14px 14px;
+      border-bottom:1px dashed rgba(56,232,255,.14);
+      background:rgba(255,255,255,.02);
+      position:relative;
+      z-index:1;
+    }
+
+    .result-title{
+      font-size:16px;
+      font-weight:800;
+      color:var(--cyan-soft);
+      line-height:1.55;
+      text-shadow:0 0 8px rgba(56,232,255,.12);
+    }
+
+    .badges{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      justify-content:flex-start;
+    }
+
+    .badge{
+      padding:5px 10px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.02);
+      color:var(--muted);
+      font-size:11px;
+      white-space:nowrap;
+    }
+
+    .progress{
+      height:3px;
+      background:linear-gradient(90deg, transparent, var(--cyan), transparent);
+      background-size:180px 100%;
+      animation:progressMove 1.2s linear infinite;
+    }
+
+    @keyframes progressMove{
+      from{ background-position:-180px 0; }
+      to{ background-position:180px 0; }
+    }
+
+    .result-body{
+      padding:16px 14px 10px;
+      line-height:2.18;
+      color:var(--text);
+      white-space:pre-wrap;
+      word-break:break-word;
+      font-size:17px;
+      text-align:right;
+      min-height:72px;
+    }
+
+    .intel-grid{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:10px;
+      padding:0 14px 14px;
+    }
+
+    .intel-card{
+      border:1px solid rgba(56,232,255,.12);
+      border-radius:var(--radius-md);
+      background:rgba(255,255,255,.02);
+      padding:13px;
+    }
+
+    .intel-label{
+      color:var(--muted);
+      font-size:10px;
+      letter-spacing:1.5px;
+      text-transform:uppercase;
+      margin-bottom:8px;
+    }
+
+    .intel-value{
+      color:var(--cyan-soft);
+      font-size:14px;
+      line-height:1.75;
+      word-break:break-word;
+    }
+
+    .actions{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+      padding:14px;
+      border-top:1px dashed rgba(56,232,255,.14);
+      background:rgba(255,255,255,.015);
+    }
+
+    .btn{
+      appearance:none;
+      border:1px solid var(--line-strong);
+      border-radius:var(--radius-md);
+      background:#07111a;
+      color:var(--cyan);
+      min-height:56px;
+      padding:10px 12px;
+      font-size:15px;
+      font-weight:700;
+      cursor:pointer;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
+      transition:.16s ease;
+    }
+
+    .btn:hover{
+      transform:translateY(-1px);
+      background:var(--cyan);
+      color:#06111b;
+    }
+
+    .btn.stop{
+      border-color:rgba(255,93,110,.34);
+      color:#ffbec6;
+    }
+
+    .btn.stop:hover{
+      background:var(--red);
+      color:#fff;
+    }
+
+    /* ===== AI Dock ===== */
+    .ai-dock{
+      position:absolute;
+      left:10px;
+      right:10px;
+      bottom:calc(var(--composer-h) + var(--copyright-h) + 10px);
+      height:var(--dock-h);
+      border-radius:var(--radius-lg);
+      display:grid;
+      grid-template-columns:1fr auto auto;
+      gap:12px;
+      align-items:center;
+      padding:0 12px;
+      overflow:hidden;
+      z-index:4;
+    }
+
+    .ai-dock::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:linear-gradient(90deg, transparent 0%, rgba(56,232,255,.03) 22%, transparent 48%, rgba(56,232,255,.02) 78%, transparent 100%);
+      pointer-events:none;
+    }
+
+    .dock-copy{
+      min-width:0;
+      display:flex;
+      flex-direction:column;
+      gap:5px;
+    }
+
+    .dock-copy .k1{
+      color:var(--muted);
+      font-size:9px;
+      letter-spacing:1.5px;
+      text-transform:uppercase;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .dock-copy .k2{
+      color:var(--cyan-soft);
+      font-size:13px;
+      font-weight:800;
+      line-height:1.3;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .dock-wave{
+      display:flex;
+      align-items:flex-end;
+      gap:4px;
+      height:30px;
+      flex:0 0 auto;
+    }
+
+    .wave-bar{
+      width:4px;
+      border-radius:999px;
+      background:linear-gradient(180deg, var(--cyan-soft), rgba(56,232,255,.16));
+      height:10px;
+      opacity:.45;
+    }
+
+    .dock-wave.active .wave-bar:nth-child(1){ animation:wave 1s .0s infinite ease-in-out; }
+    .dock-wave.active .wave-bar:nth-child(2){ animation:wave 1s .1s infinite ease-in-out; }
+    .dock-wave.active .wave-bar:nth-child(3){ animation:wave 1s .2s infinite ease-in-out; }
+    .dock-wave.active .wave-bar:nth-child(4){ animation:wave 1s .3s infinite ease-in-out; }
+    .dock-wave.active .wave-bar:nth-child(5){ animation:wave 1s .4s infinite ease-in-out; }
+    .dock-wave.active .wave-bar:nth-child(6){ animation:wave 1s .5s infinite ease-in-out; }
+
+    @keyframes wave{
+      0%,100%{ height:10px; opacity:.35; }
+      50%{ height:28px; opacity:1; }
+    }
+
+    .dock-core-wrap{
+      position:relative;
+      width:64px;
+      height:64px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex:0 0 auto;
+    }
+
+    .dock-orbit{
+      position:absolute;
+      border-radius:50%;
+      border:1px solid rgba(56,232,255,.15);
+      animation:spin 10s linear infinite;
+    }
+
+    .dock-orbit.o1{ inset:0; }
+    .dock-orbit.o2{ inset:10px; animation-duration:7s; animation-direction:reverse; }
+    .dock-orbit.o3{ inset:20px; animation-duration:5s; }
+
+    .dock-core{
+      width:28px;
+      height:28px;
+      border-radius:50%;
+      background:radial-gradient(circle at 35% 35%, #fff, var(--cyan), #0c3246 74%);
+      box-shadow:0 0 20px rgba(56,232,255,.35);
+      position:relative;
+      z-index:2;
+      transition:.22s ease;
+    }
+
+    .dock-core.thinking{
+      background:radial-gradient(circle at 35% 35%, #ecfff6, var(--green), #0b3828 74%);
+      box-shadow:0 0 20px rgba(55,255,176,.28);
+    }
+
+    .dock-core.speaking{
+      animation:corePulse 1s ease-in-out infinite;
+    }
+
+    /* ===== Composer ===== */
+    .composer{
+      position:absolute;
+      left:10px;
+      right:10px;
+      bottom:calc(var(--copyright-h) + 8px);
+      height:var(--composer-h);
+      border-radius:var(--radius-lg);
+      display:grid;
+      grid-template-columns:58px 1fr 58px;
+      gap:10px;
+      align-items:center;
+      padding:10px;
+      z-index:5;
+    }
+
+    .icon-btn{
+      width:54px;
+      height:54px;
+      border-radius:50%;
+      display:grid;
+      place-items:center;
+      border:1px solid var(--line-strong);
+      background:#07111a;
+      color:var(--cyan);
+      font-size:22px;
+      cursor:pointer;
+      transition:.16s ease;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
+    }
+
+    .icon-btn:hover{
+      background:var(--cyan);
+      color:#06111b;
+      transform:translateY(-1px);
+    }
+
+    .input-shell{
+      height:54px;
+      border-radius:var(--radius-md);
+      border:1px solid var(--line);
+      background:#07111a;
+      display:flex;
+      align-items:center;
+      padding:0 14px;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.03);
+      position:relative;
+      overflow:hidden;
+    }
+
+    .input-shell::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:linear-gradient(90deg, transparent 0%, rgba(56,232,255,.02) 26%, transparent 56%, rgba(56,232,255,.015) 82%, transparent 100%);
+      pointer-events:none;
+    }
+
+    .input-shell input{
+      width:100%;
+      background:transparent;
+      border:none;
+      outline:none;
+      color:var(--text);
+      font-size:16px;
+      caret-color:var(--cyan);
+      position:relative;
+      z-index:1;
+    }
+
+    .input-shell input::placeholder{
+      color:#99c7cf;
+    }
+
+    /* ===== Copyright ===== */
+    .copyright-bar{
+      position:absolute;
+      left:10px;
+      right:10px;
+      bottom:8px;
+      height:var(--copyright-h);
+      border-radius:12px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:var(--muted);
+      font-size:11px;
+      text-align:center;
+      padding:0 10px;
+      z-index:5;
+    }
+
+    /* ===== Toast ===== */
+    .toast{
+      position:fixed;
+      left:50%;
+      bottom:126px;
+      transform:translateX(-50%);
+      z-index:30;
+      padding:10px 14px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      background:rgba(0,0,0,.84);
+      color:var(--cyan);
+      box-shadow:var(--shadow);
+      font-size:14px;
+      opacity:0;
+      pointer-events:none;
+      transition:opacity .25s ease, transform .25s ease;
+    }
+
+    .toast.show{
+      opacity:1;
+      transform:translateX(-50%) translateY(-6px);
+    }
+
+    /* ===== Security Modal ===== */
+    #securityModal{
+      position:fixed;
+      inset:0;
+      z-index:9999;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+      background:rgba(0,0,0,.74);
+      backdrop-filter:blur(6px);
+    }
+
+    #securityModal.show{
+      display:flex;
+      animation:modalFade .22s ease;
+    }
+
+    @keyframes modalFade{
+      from{ opacity:0; }
+      to{ opacity:1; }
+    }
+
+    .security-box{
+      width:min(92vw, 460px);
+      border-radius:22px;
+      border:1px solid rgba(255,100,100,.42);
+      background:linear-gradient(180deg, rgba(90,0,0,.95), rgba(35,0,0,.95));
+      box-shadow:0 0 30px rgba(255,50,50,.22), inset 0 0 24px rgba(255,120,120,.08);
+      overflow:hidden;
+      transform:scale(.96);
+      animation:modalPop .26s ease forwards;
+    }
+
+    @keyframes modalPop{
+      to{ transform:scale(1); }
+    }
+
+    .security-head{
+      padding:16px 18px;
+      border-bottom:1px solid rgba(255,120,120,.18);
+      color:#ffd2d2;
+      font-size:20px;
+      font-weight:700;
+      text-align:center;
+    }
+
+    .security-body{
+      padding:18px;
+      color:#ffe9e9;
+      line-height:2;
+      text-align:center;
+      font-size:15px;
+    }
+
+    .security-body .accent{
+      color:#ffaaaa;
+      font-weight:700;
+    }
+
+    .security-actions{
+      display:flex;
+      justify-content:center;
+      padding:0 18px 18px;
+    }
+
+    .security-ok{
+      min-width:140px;
+      appearance:none;
+      border:none;
+      border-radius:12px;
+      padding:12px 18px;
+      cursor:pointer;
+      font-size:15px;
+      font-weight:700;
+      color:#fff;
+      background:linear-gradient(180deg, #ff5252, #c11f1f);
+    }
+
+    /* ===== Desktop ===== */
+    @media (min-width: 960px){
+      :root{
+        --hero-h:250px;
+        --dock-h:96px;
+        --composer-h:86px;
+      }
+
+      .app{
+        padding:10px;
+      }
+
+      .topbar{
+        padding:12px 16px;
+      }
+
+      .brand-copy h1{
+        font-size:20px;
+      }
+
+      .brand-copy .sub{
+        font-size:12px;
+      }
+
+      .status-pill{
+        font-size:11px;
+        max-width:220px;
+      }
+
+      .hero{
+        left:16px;
+        right:16px;
+        top:16px;
+        padding:18px;
+        grid-template-columns:1fr 240px;
+      }
+
+      .hero-title{
+        font-size:42px;
+      }
+
+      .hero-desc{
+        font-size:15px;
+      }
+
+      .hero-tags{
+        gap:10px;
+      }
+
+      .hero-tag{
+        font-size:12px;
+        padding:8px 12px;
+      }
+
+      .hero-visual{
+        width:220px;
+        height:220px;
+      }
+
+      .hero-ring.r2{ inset:18px; }
+      .hero-ring.r3{ inset:38px; }
+      .hero-core-halo{
+        width:134px;
+        height:134px;
+      }
+
+      .hero-core{
+        width:84px;
+        height:84px;
+      }
+
+      .chat{
+        padding:
+          calc(var(--hero-h) + 30px)
+          18px
+          calc(var(--safe-bottom))
+          18px;
+      }
+
+      .bubble{
+        max-width:min(92%, 860px);
+        font-size:15px;
+      }
+
+      .result-card{
+        width:min(100%, 980px);
+      }
+
+      .result-head{
+        flex-direction:row;
+        justify-content:space-between;
+        align-items:center;
+      }
+
+      .result-title{
+        white-space:nowrap;
+      }
+
+      .badges{
+        justify-content:flex-end;
+      }
+
+      .result-body{
+        font-size:18px;
+        padding:18px 18px 10px;
+      }
+
+      .intel-grid{
+        grid-template-columns:repeat(3, 1fr);
+        padding:0 18px 16px;
+      }
+
+      .actions{
+        grid-template-columns:repeat(3, 1fr);
+        padding:16px 18px 18px;
+      }
+
+      .ai-dock{
+        left:16px;
+        right:16px;
+        bottom:calc(var(--composer-h) + var(--copyright-h) + 12px);
+        padding:0 18px;
+      }
+
+      .dock-copy .k1{
+        font-size:11px;
+        letter-spacing:2px;
+      }
+
+      .dock-copy .k2{
+        font-size:16px;
+      }
+
+      .dock-wave{
+        height:34px;
+      }
+
+      .wave-bar{
+        width:5px;
+      }
+
+      .dock-core-wrap{
+        width:78px;
+        height:78px;
+      }
+
+      .dock-core{
+        width:32px;
+        height:32px;
+      }
+
+      .composer{
+        left:16px;
+        right:16px;
+        bottom:calc(var(--copyright-h) + 10px);
+        grid-template-columns:62px 1fr 62px;
+        padding:12px;
+      }
+
+      .icon-btn{
+        width:56px;
+        height:56px;
+        font-size:24px;
+      }
+
+      .input-shell{
+        height:56px;
+      }
+
+      .input-shell input{
+        font-size:18px;
+      }
+
+      .copyright-bar{
+        left:16px;
+        right:16px;
+      }
     }
   </style>
 </head>
 <body>
-  <h1>منصة البحث العلمي</h1>
-  <audio id="background-music" preload="none" controls style="display: none">
-    <source src="https://assets.mixkit.co/active_storage/sfx/2467/2467-preview.mp3" type="audio/mpeg" />
-  </audio>
-  <div id="chat-container">
-    <div id="conversation"></div>
-    <div id="input-container">
-      <input type="text" id="userInput" placeholder="اكتب كلمة أو جملة للبحث" />
-      <button id="sendBtn" onclick="searchWikipedia()">بحث</button>
+  <div class="bg-grid"></div>
+  <div class="bg-glow"></div>
+  <div class="bg-scan"></div>
+
+  <div class="app">
+    <div class="topbar glass">
+      <div class="brand">
+        <div class="brand-core"></div>
+        <div class="brand-copy">
+          <h1>KeFo AI — GLASS FUTURE</h1>
+          <div class="sub">Clean Futuristic Intelligence Interface</div>
+        </div>
+      </div>
+
+      <div class="status-cluster">
+        <div class="status-pill">CORE ONLINE</div>
+        <div class="status-pill" id="voiceInfo">VOICE: AUTO</div>
+        <div class="status-pill" id="langInfo">LANG: AUTO</div>
+      </div>
+    </div>
+
+    <div class="stage glass">
+      <div class="hero glass">
+        <div class="hero-copy">
+          <div class="hero-kicker">Artificial Intelligence Presence</div>
+          <div class="hero-title">تصميم مستقبلي هادئ… لكنه حيّ</div>
+          <div class="hero-desc">
+            نواة ذكاء واضحة، واجهة زجاجية نظيفة، ونظام عرض معرفة يجعل المستخدم يشعر أنه داخل منصة متقدمة حقيقية لا مجرد صفحة باهتة.
+          </div>
+
+          <div class="hero-tags">
+            <div class="hero-tag">Future Glass</div>
+            <div class="hero-tag">Student Ready</div>
+            <div class="hero-tag">Arabic · English · Deutsch</div>
+          </div>
+        </div>
+
+        <div class="hero-visual">
+          <div class="hero-ring r1"></div>
+          <div class="hero-ring r2"></div>
+          <div class="hero-ring r3"></div>
+          <div class="hero-core-halo"></div>
+          <div class="hero-core" id="heroCore"></div>
+        </div>
+      </div>
+
+      <div class="chat" id="chat"></div>
+
+      <div class="ai-dock glass">
+        <div class="dock-copy">
+          <div class="k1">Neural State</div>
+          <div class="k2" id="dockStateText">أنا حاضر، جاهز للفهم والشرح</div>
+        </div>
+
+        <div class="dock-wave" id="dockWave">
+          <span class="wave-bar"></span>
+          <span class="wave-bar"></span>
+          <span class="wave-bar"></span>
+          <span class="wave-bar"></span>
+          <span class="wave-bar"></span>
+          <span class="wave-bar"></span>
+        </div>
+
+        <div class="dock-core-wrap">
+          <div class="dock-orbit o1"></div>
+          <div class="dock-orbit o2"></div>
+          <div class="dock-orbit o3"></div>
+          <div class="dock-core" id="dockCore"></div>
+        </div>
+      </div>
+
+      <div class="composer glass">
+        <button class="icon-btn" id="sendBtn" title="إرسال">➤</button>
+
+        <div class="input-shell">
+          <input id="input" type="text" placeholder="اكتب سؤالك... مثال: حلب / Berlin / künstliche Intelligenz" />
+        </div>
+
+        <button class="icon-btn" id="voiceBtn" title="إدخال صوتي">🎤</button>
+      </div>
+
+      <div class="copyright-bar glass">
+        جميع الحقوق محفوظة © KeFo.tech — Zakaria KeFo
+      </div>
     </div>
   </div>
-  <script>
-    let isMusicPlayed = false;
-    let currentSearchResults = [];
 
-    async function searchWikipedia() {
-      const searchTerm = document.getElementById('userInput').value.trim();
-      if (!searchTerm) {
-        showCopyNotification("❗ يرجى كتابة كلمة للبحث");
-        return;
-      }
-      if (!isMusicPlayed) {
-        document.getElementById('background-music').play();
-        isMusicPlayed = true;
-      }
-      addMessageToConversation(searchTerm, true);
-      addMessageToConversation("جاري البحث...", false);
-      const apiUrl = `https://ar.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=${encodeURIComponent(searchTerm)}&origin=*`;
-      try {
-        const response = await fetch(apiUrl);
-        const data = await response.json();
-        displaySearchResults(data.query.search, searchTerm);
-      } catch (error) {
-        console.error("حدث خطأ أثناء البحث:", error);
-        addMessageToConversation("❌ حدث خطأ أثناء محاولة البحث، يرجى المحاولة لاحقًا.", false);
-      }
+  <div class="toast" id="toast"></div>
+
+  <div id="securityModal">
+    <div class="security-box">
+      <div class="security-head">⚠️ تنبيه أمني</div>
+      <div class="security-body">
+        <span class="accent">المنصة محمية</span>، شكرًا لتفهمكم.<br>
+        والآن لنعد إلى البحث والتعلّم.
+      </div>
+      <div class="security-actions">
+        <button class="security-ok" id="securityOkBtn">موافق</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const chat = document.getElementById('chat');
+    const input = document.getElementById('input');
+    const sendBtn = document.getElementById('sendBtn');
+    const voiceBtn = document.getElementById('voiceBtn');
+    const toast = document.getElementById('toast');
+    const langInfo = document.getElementById('langInfo');
+    const voiceInfo = document.getElementById('voiceInfo');
+    const securityModal = document.getElementById('securityModal');
+    const securityOkBtn = document.getElementById('securityOkBtn');
+    const dockStateText = document.getElementById('dockStateText');
+    const dockWave = document.getElementById('dockWave');
+    const dockCore = document.getElementById('dockCore');
+    const heroCore = document.getElementById('heroCore');
+
+    let voices = [];
+    let bestArabicVoice = null;
+    let currentReadButton = null;
+    let speaking = false;
+    let securityLock = false;
+    let touchStartTime = 0;
+    let touchMoved = false;
+
+    function showToast(message){
+      toast.textContent = message;
+      toast.classList.add('show');
+      clearTimeout(showToast._timer);
+      showToast._timer = setTimeout(() => toast.classList.remove('show'), 1800);
     }
 
-    function displaySearchResults(results, searchTerm) {
-      const conversationContainer = document.getElementById('conversation');
-      if (results.length === 0) {
-        addMessageToConversation(`لا توجد نتائج لكلمة: "${searchTerm}"`, false);
-        return;
-      }
-      currentSearchResults = results;
-      addMessageToConversation("📄 نتائج البحث:", false);
-      results.forEach((result, index) => {
-        const resultText = `${index + 1}. ${result.title}`;
-        const resultDiv = document.createElement('div');
-        resultDiv.className = 'message-bubble';
-        resultDiv.textContent = resultText;
-        resultDiv.style.cursor = 'pointer';
-        resultDiv.onclick = () => fetchFullArticle(result.title);
-        conversationContainer.appendChild(resultDiv);
+    function scrollToBottom(){
+      requestAnimationFrame(() => {
+        chat.scrollTop = chat.scrollHeight;
       });
     }
 
-    async function fetchFullArticle(title) {
-      const conversationContainer = document.getElementById('conversation');
-      addMessageToConversation("🔄 جاري جلب الشرح...", false);
-      const apiUrl = `https://ar.wikipedia.org/w/api.php?action=query&format=json&prop=extracts&exintro&titles=${encodeURIComponent(title)}&origin=*`;
-      try {
-        const response = await fetch(apiUrl);
-        const data = await response.json();
-        const page = Object.values(data.query.pages)[0];
-        let extract = page.extract || "لم يتم العثور على شرح.";
-        extract = cleanHTML(extract);
-        const articleContainer = document.createElement('div');
-        articleContainer.className = 'article-container';
-        const typingEffectDiv = document.createElement('div');
-        typingEffectDiv.className = 'typing-effect';
-        articleContainer.appendChild(typingEffectDiv);
-        let currentText = '';
-        let wordIndex = 0;
-        const words = extract.split(' ');
-        function typeWriter() {
-          if (wordIndex < words.length) {
-            currentText += words[wordIndex] + ' ';
-            typingEffectDiv.textContent = currentText;
-            wordIndex++;
-            setTimeout(typeWriter, 100);
-          } else {
-            const signature = document.createElement('div');
-            signature.className = 'signature';
-            signature.textContent = "بقلم زكريا كيفو";
-            articleContainer.appendChild(signature);
-          }
-        }
-        typeWriter();
-        const copyBtn = document.createElement('button');
-        copyBtn.className = 'copy-btn';
-        copyBtn.textContent = "نسخ النتيجة";
-        copyBtn.onclick = () => copyToClipboard(extract + "\nبقلم زكريا كيفو");
-        articleContainer.appendChild(copyBtn);
-        conversationContainer.appendChild(articleContainer);
-        conversationContainer.scrollTop = conversationContainer.scrollHeight;
-      } catch (error) {
-        console.error("حدث خطأ أثناء جلب الشرح:", error);
-        addMessageToConversation("❌ حدث خطأ أثناء جلب الشرح، يرجى المحاولة لاحقًا.", false);
+    function scrollIntoViewBottom(el){
+      requestAnimationFrame(() => {
+        el.scrollIntoView({ behavior:'smooth', block:'end' });
+      });
+    }
+
+    function setAIState(mode, text){
+      dockStateText.textContent = text;
+
+      dockCore.classList.remove('thinking', 'speaking');
+      heroCore.classList.remove('thinking', 'speaking');
+      dockWave.classList.remove('active');
+
+      if(mode === 'thinking'){
+        dockCore.classList.add('thinking');
+        heroCore.classList.add('thinking');
+        dockWave.classList.add('active');
+      }
+
+      if(mode === 'speaking'){
+        dockCore.classList.add('speaking');
+        heroCore.classList.add('speaking');
+        dockWave.classList.add('active');
       }
     }
 
-    function cleanHTML(text) {
-      const doc = new DOMParser().parseFromString(text, 'text/html');
-      return doc.body.textContent || "";
+    setAIState('idle', 'أنا حاضر، جاهز للفهم والشرح');
+
+    function addBubble(text, cls='ai'){
+      const wrap = document.createElement('div');
+      wrap.className = 'msg ' + cls;
+
+      const bubble = document.createElement('div');
+      bubble.className = 'bubble';
+      bubble.textContent = text;
+
+      wrap.appendChild(bubble);
+      chat.appendChild(wrap);
+      scrollToBottom();
+      return wrap;
     }
 
-    function addMessageToConversation(message, isUser = false) {
-      const conversationContainer = document.getElementById('conversation');
-      const messageDiv = document.createElement('div');
-      messageDiv.className = `message-bubble ${isUser ? 'user-bubble' : ''}`;
-      messageDiv.textContent = message;
-      conversationContainer.appendChild(messageDiv);
-      conversationContainer.scrollTop = conversationContainer.scrollHeight;
+    function rankArabicVoice(voice){
+      const name = (voice.name || '').toLowerCase();
+      const lang = (voice.lang || '').toLowerCase();
+
+      let score = 0;
+      if(lang.startsWith('ar')) score += 100;
+      if(name.includes('google')) score += 30;
+      if(name.includes('microsoft')) score += 25;
+      if(name.includes('natural')) score += 20;
+      if(name.includes('desktop')) score += 10;
+      if(name.includes('hoda')) score += 8;
+      if(name.includes('naayf')) score += 8;
+      if(name.includes('tarik')) score += 8;
+      if(name.includes('majid')) score += 8;
+      if(name.includes('maged')) score += 8;
+      if(voice.localService) score += 5;
+      return score;
     }
 
-    function copyToClipboard(text) {
-      navigator.clipboard.writeText(text)
-        .then(() => { showCopyNotification("✅ تم نسخ النص!"); })
-        .catch(err => {
-          console.error('خطأ في النسخ:', err);
-          showCopyNotification("❌ لم يتم النسخ!");
+    function loadVoices(){
+      voices = speechSynthesis.getVoices() || [];
+      const arabicVoices = voices.filter(v => (v.lang || '').toLowerCase().startsWith('ar'));
+
+      if(arabicVoices.length){
+        arabicVoices.sort((a,b) => rankArabicVoice(b) - rankArabicVoice(a));
+        bestArabicVoice = arabicVoices[0];
+        voiceInfo.textContent = 'VOICE: ' + bestArabicVoice.name;
+      } else {
+        bestArabicVoice = null;
+        voiceInfo.textContent = 'VOICE: DEFAULT';
+      }
+    }
+
+    loadVoices();
+    if(typeof speechSynthesis !== 'undefined' && speechSynthesis.onvoiceschanged !== undefined){
+      speechSynthesis.onvoiceschanged = loadVoices;
+    }
+
+    function stopSpeaking(updateButton = true){
+      speechSynthesis.cancel();
+      speaking = false;
+
+      if(updateButton && currentReadButton){
+        currentReadButton.textContent = '🔊 قراءة صوتية';
+        currentReadButton.classList.remove('stop');
+        currentReadButton = null;
+      }
+
+      setAIState('idle', 'أنا حاضر، جاهز للفهم والشرح');
+    }
+
+    function splitTextForSpeech(text, maxLength = 180){
+      const clean = String(text || '').replace(/\s+/g, ' ').trim();
+      if(!clean) return [];
+
+      const sentences = clean.match(/[^.!؟\n]+[.!؟\n]?/g) || [clean];
+      const chunks = [];
+      let current = '';
+
+      for(const raw of sentences){
+        const sentence = raw.trim();
+        if(!sentence) continue;
+
+        if((current + ' ' + sentence).trim().length <= maxLength){
+          current = (current + ' ' + sentence).trim();
+        } else {
+          if(current) chunks.push(current);
+
+          if(sentence.length <= maxLength){
+            current = sentence;
+          } else {
+            const words = sentence.split(' ');
+            let part = '';
+            for(const word of words){
+              if((part + ' ' + word).trim().length <= maxLength){
+                part = (part + ' ' + word).trim();
+              } else {
+                if(part) chunks.push(part);
+                part = word;
+              }
+            }
+            current = part;
+          }
+        }
+      }
+
+      if(current) chunks.push(current);
+      return chunks;
+    }
+
+    function speakLong(text, button=null){
+      stopSpeaking(false);
+
+      const chunks = splitTextForSpeech(text, 180);
+      if(!chunks.length) return;
+
+      speaking = true;
+      currentReadButton = button;
+
+      if(currentReadButton){
+        currentReadButton.textContent = '⏹ إيقاف القراءة';
+        currentReadButton.classList.add('stop');
+      }
+
+      setAIState('speaking', 'أقرأ لك المعرفة بصوت حي');
+
+      let index = 0;
+
+      function speakNext(){
+        if(!speaking || index >= chunks.length){
+          speaking = false;
+
+          if(currentReadButton){
+            currentReadButton.textContent = '🔊 قراءة صوتية';
+            currentReadButton.classList.remove('stop');
+          }
+
+          currentReadButton = null;
+          setAIState('idle', 'انتهيت من القراءة، جاهز للمتابعة');
+          return;
+        }
+
+        const utter = new SpeechSynthesisUtterance(chunks[index]);
+        utter.lang = bestArabicVoice?.lang || 'ar-SA';
+        utter.rate = 0.95;
+        utter.pitch = 1;
+        utter.volume = 1;
+
+        if(bestArabicVoice){
+          utter.voice = bestArabicVoice;
+        }
+
+        utter.onend = () => {
+          index++;
+          speakNext();
+        };
+
+        utter.onerror = () => {
+          speaking = false;
+          if(currentReadButton){
+            currentReadButton.textContent = '🔊 قراءة صوتية';
+            currentReadButton.classList.remove('stop');
+          }
+          currentReadButton = null;
+          setAIState('idle', 'تعذر تشغيل الصوت، لكني ما زلت حاضرًا');
+          showToast('تعذر تشغيل الصوت');
+        };
+
+        speechSynthesis.speak(utter);
+      }
+
+      speakNext();
+    }
+
+    function detectInputLanguage(text){
+      const value = String(text || '').trim();
+      if(/[ء-ي]/.test(value)) return 'ar';
+      if(/[äöüßÄÖÜ]/.test(value)) return 'de';
+      return 'en';
+    }
+
+    function summarizeLocal(text){
+      const parts = text
+        .split(/[.؟!\n]/)
+        .map(s => s.trim())
+        .filter(Boolean);
+
+      if(!parts.length) return text;
+      return parts.slice(0, 4).join('.\n') + (parts.length > 4 ? '\n…' : '');
+    }
+
+    function extractHighlights(text){
+      const parts = text
+        .split(/[.؟!\n]/)
+        .map(s => s.trim())
+        .filter(Boolean);
+
+      return {
+        essence: parts[0] || 'لا توجد خلاصة قصيرة.',
+        depth: parts[1] || 'النص يحتاج قراءة أوسع لفهم الطبقة الأعمق.',
+        signal: parts[2] || 'يمكنك حفظ هذه النتيجة أو تحويلها إلى ملخص سريع.'
+      };
+    }
+
+    function quizFromText(text){
+      const parts = text
+        .split(/[.؟!\n]/)
+        .map(s => s.trim())
+        .filter(Boolean);
+
+      const chosen = parts[Math.floor(Math.random() * Math.min(parts.length, 5))] || 'اشرح الفكرة الأساسية للنص بطريقتك.';
+      return `🧪 سؤال للمراجعة:\n${chosen}\n\nحاول أن تكتب الجواب بطريقتك الخاصة.`;
+    }
+
+    function createActionButton(label, onClick){
+      const btn = document.createElement('button');
+      btn.className = 'btn';
+      btn.textContent = label;
+      btn.addEventListener('click', onClick);
+      return btn;
+    }
+
+    function animateBuild(element, fullText){
+      element.textContent = '';
+      let i = 0;
+
+      function step(){
+        element.textContent = fullText.slice(0, i);
+        i += 2;
+        if(i <= fullText.length){
+          requestAnimationFrame(step);
+        }
+      }
+
+      requestAnimationFrame(step);
+    }
+
+    function renderCard(title, text, sourceLang){
+      const card = document.createElement('div');
+      card.className = 'result-card glass';
+
+      const head = document.createElement('div');
+      head.className = 'result-head';
+
+      const titleDiv = document.createElement('div');
+      titleDiv.className = 'result-title';
+      titleDiv.textContent = '📄 ' + (title || 'نتيجة ويكيبيديا');
+
+      const badges = document.createElement('div');
+      badges.className = 'badges';
+      badges.innerHTML = `
+        <span class="badge">GLASS MODE</span>
+        <span class="badge">STUDENT</span>
+        <span class="badge">WIKIPEDIA ${String(sourceLang || '').toUpperCase()}</span>
+      `;
+
+      const progress = document.createElement('div');
+      progress.className = 'progress';
+
+      const body = document.createElement('div');
+      body.className = 'result-body';
+
+      const h = extractHighlights(text);
+      const intelGrid = document.createElement('div');
+      intelGrid.className = 'intel-grid';
+      intelGrid.innerHTML = `
+        <div class="intel-card">
+          <div class="intel-label">Core Meaning</div>
+          <div class="intel-value">${h.essence}</div>
+        </div>
+        <div class="intel-card">
+          <div class="intel-label">Depth Layer</div>
+          <div class="intel-value">${h.depth}</div>
+        </div>
+        <div class="intel-card">
+          <div class="intel-label">Learning Signal</div>
+          <div class="intel-value">${h.signal}</div>
+        </div>
+      `;
+
+      const actions = document.createElement('div');
+      actions.className = 'actions';
+
+      const copyBtn = createActionButton('📋 نسخ النص', () => {
+        navigator.clipboard.writeText(body.textContent);
+        showToast('تم النسخ');
+      });
+
+      const readBtn = createActionButton('🔊 قراءة صوتية', () => {
+        if(currentReadButton === readBtn && speaking){
+          stopSpeaking(true);
+          return;
+        }
+        speakLong(body.textContent, readBtn);
+      });
+
+      const summaryBtn = createActionButton('✂️ ملخص سريع', () => {
+        body.textContent = summarizeLocal(text);
+        scrollIntoViewBottom(card);
+      });
+
+      const saveBtn = createActionButton('⭐ حفظ', () => {
+        const notes = JSON.parse(localStorage.getItem('kefo_notes') || '[]');
+        notes.push({
+          title,
+          text,
+          date: Date.now(),
+          lang: sourceLang
         });
-    }
+        localStorage.setItem('kefo_notes', JSON.stringify(notes));
+        showToast('تم الحفظ');
+      });
 
-    function showCopyNotification(message) {
-      const notification = document.createElement('div');
-      notification.className = 'notification';
-      notification.textContent = message;
-      document.body.appendChild(notification);
+      const quizBtn = createActionButton('🧪 اختبرني', () => {
+        alert(quizFromText(body.textContent));
+      });
+
+      const fullBtn = createActionButton('📘 النص الكامل', () => {
+        body.textContent = text;
+        scrollIntoViewBottom(card);
+      });
+
+      actions.append(copyBtn, readBtn, summaryBtn, saveBtn, quizBtn, fullBtn);
+      head.append(titleDiv, badges);
+      card.append(head, progress, body, intelGrid, actions);
+      chat.appendChild(card);
+      scrollIntoViewBottom(card);
+
       setTimeout(() => {
-        notification.style.opacity = '0';
-        setTimeout(() => { notification.remove(); }, 500);
-      }, 2000);
+        progress.remove();
+        animateBuild(body, text);
+      }, 700);
+
+      return card;
     }
 
-    document.addEventListener("contextmenu", e => e.preventDefault());
-    document.addEventListener("selectstart", e => e.preventDefault());
-    document.addEventListener("touchstart", e => {
-      if (e.touches.length > 1) e.preventDefault();
-    }, { passive: false });
+    async function ask(){
+      stopSpeaking(true);
+
+      const q = input.value.trim();
+      if(!q) return;
+
+      const lang = detectInputLanguage(q);
+      langInfo.textContent = 'LANG: ' + lang.toUpperCase();
+
+      addBubble(q, 'user');
+      input.value = '';
+
+      setAIState('thinking', 'أحلل السؤال وأعيد تشكيل المعرفة...');
+      addBubble('🤖 أفكر… أبني المعنى قبل أن أعرضه لك.', 'ai');
+
+      const url = `https://${lang}.wikipedia.org/w/api.php?action=query&format=json&prop=extracts&explaintext&titles=${encodeURIComponent(q)}&origin=*`;
+
+      try{
+        const res = await fetch(url);
+        const data = await res.json();
+        const page = Object.values(data.query.pages)[0];
+
+        const text = page && page.extract ? page.extract : (
+          lang === 'ar' ? 'لم أجد معلومات عن هذا الموضوع.' :
+          lang === 'de' ? 'Keine Informationen zu diesem Thema gefunden.' :
+          'No information found about this topic.'
+        );
+
+        const title = page && page.title ? page.title : q;
+
+        renderCard(title, text, lang);
+        setAIState('idle', 'المعرفة أمامك. اختر القراءة أو الحفظ أو الاختبار.');
+      } catch(error){
+        setAIState('idle', 'حدث خلل مؤقت. ما زلت حاضرًا للمحاولة التالية.');
+        addBubble('❌ حدث خطأ أثناء جلب المعلومات.', 'ai');
+      }
+    }
+
+    /* ===== Security ===== */
+    function closeSecurityModal(){
+      securityModal.classList.remove('show');
+    }
+
+    securityOkBtn.addEventListener('click', closeSecurityModal);
+
+    function triggerSecurityAlert(){
+      if(securityLock) return;
+      securityLock = true;
+      document.body.classList.add('security-alert');
+      securityModal.classList.add('show');
+
+      setTimeout(() => {
+        document.body.classList.remove('security-alert');
+        securityLock = false;
+      }, 3800);
+    }
+
+    document.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      triggerSecurityAlert();
+    });
+
+    document.addEventListener('selectstart', (e) => {
+      e.preventDefault();
+      triggerSecurityAlert();
+    });
+
+    document.addEventListener('copy', (e) => {
+      e.preventDefault();
+      triggerSecurityAlert();
+    });
+
+    document.addEventListener('cut', (e) => {
+      e.preventDefault();
+      triggerSecurityAlert();
+    });
+
+    document.addEventListener('dragstart', (e) => {
+      e.preventDefault();
+      triggerSecurityAlert();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      const key = e.key.toLowerCase();
+      if(
+        key === 'f12' ||
+        (e.ctrlKey && e.shiftKey && ['i','j','c','k'].includes(key)) ||
+        (e.ctrlKey && ['u','s','a','c','x'].includes(key))
+      ){
+        e.preventDefault();
+        e.stopPropagation();
+        triggerSecurityAlert();
+      }
+    }, true);
+
+    document.addEventListener('mousedown', (e) => {
+      if(e.button === 2){
+        e.preventDefault();
+        triggerSecurityAlert();
+      }
+    });
+
+    document.addEventListener('touchstart', () => {
+      touchStartTime = Date.now();
+      touchMoved = false;
+    }, { passive:true });
+
+    document.addEventListener('touchmove', () => {
+      touchMoved = true;
+    }, { passive:true });
+
+    document.addEventListener('touchend', (e) => {
+      const duration = Date.now() - touchStartTime;
+      if(duration > 600 && !touchMoved){
+        e.preventDefault();
+        triggerSecurityAlert();
+      }
+    }, { passive:false });
+
+    /* ===== Voice input ===== */
+    sendBtn.addEventListener('click', ask);
+
+    input.addEventListener('keydown', (e) => {
+      if(e.key === 'Enter') ask();
+    });
+
+    voiceBtn.addEventListener('click', () => {
+      stopSpeaking(true);
+
+      const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if(!Recognition){
+        showToast('الإدخال الصوتي غير مدعوم هنا');
+        return;
+      }
+
+      const rec = new Recognition();
+      rec.lang = 'ar-SA';
+      rec.interimResults = false;
+      rec.maxAlternatives = 1;
+
+      rec.onstart = () => {
+        showToast('تحدث الآن...');
+        setAIState('thinking', 'أنا أستمع… حوّل الفكرة إلى صوت.');
+      };
+
+      rec.onresult = (e) => {
+        input.value = e.results[0][0].transcript;
+        ask();
+      };
+
+      rec.onerror = () => {
+        setAIState('idle', 'لم ألتقط الصوت بوضوح، لكني ما زلت حاضرًا.');
+        showToast('تعذر التقاط الصوت');
+      };
+
+      rec.onend = () => {
+        if(!speaking){
+          setAIState('idle', 'أنا حاضر، جاهز للفهم والشرح');
+        }
+      };
+
+      rec.start();
+    });
+
+    addBubble('مرحبًا 👋 هذه نسخة مستقبلية أنيقة ومنضبطة بصريًا. اكتب أي موضوع بالعربية أو الإنجليزية أو الألمانية، وسأبنيه لك في بطاقة معرفة واضحة وجذابة.', 'ai');
   </script>
 </body>
 </html>
